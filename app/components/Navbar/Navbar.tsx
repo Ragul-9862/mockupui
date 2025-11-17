@@ -59,14 +59,7 @@ const Navbar = () => {
               openRegister={openRegister}
             />
 
-            <Registerdialog
-              show={showRegister}
-              setShow={setShowRegister}
-              openSignIn={() => {
-                setShowRegister(false);
-                setTimeout(() => setShowSignIn(true), 300);
-              }}
-            />
+           
 
             {/* Mobile Drawer */}
             <div className="block lg:hidden">

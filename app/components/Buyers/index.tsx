@@ -3,23 +3,25 @@
 import { useState } from "react";
 
 export default function Buyers() {
-  const [file, setFile] = useState(null);
-  const [placeholders, setPlaceholders] = useState([]);
+  const [file, setFile] = useState<File | null>(null);
+  const [placeholders, setPlaceholders] = useState<{ id: number; url: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
-  const handleFileSelect = (selectedFile) => {
+  // FIXED TYPE
+  const handleFileSelect = (selectedFile: File | null) => {
     if (!selectedFile) return;
+
     setFile(selectedFile);
-    generatePlaceholderImages(); // Trigger placeholder generation
+    generatePlaceholderImages(selectedFile); // pass file
   };
 
-  const handleFileChange = (e) => {
-    handleFileSelect(e.target.files[0]);
+  // FIXED TYPE
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFileSelect(e.target.files?.[0] || null);
   };
 
-  // Drag Events
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     setIsDragging(true);
   };
@@ -28,17 +30,15 @@ export default function Buyers() {
     setIsDragging(false);
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     setIsDragging(false);
-    handleFileSelect(e.dataTransfer.files[0]);
+    handleFileSelect(e.dataTransfer.files?.[0] || null);
   };
 
-  // Generate 5 placeholder images (Gemini-style effect)
-  const generatePlaceholderImages = () => {
+  const generatePlaceholderImages = (file: File) => {
     setLoading(true);
 
-    // First: Show loading placeholders
     const temp = Array.from({ length: 5 }, (_, i) => ({
       id: i,
       url: `https://placehold.co/600x400?text=Generating...+${i + 1}`,
@@ -46,11 +46,10 @@ export default function Buyers() {
 
     setPlaceholders(temp);
 
-    // Fake AI delay
     setTimeout(() => {
       const final = Array.from({ length: 5 }, (_, i) => ({
         id: i,
-        url: `https://placehold.co/600x400?text=Generated+Mockup+${i + 1}`,
+        url: URL.createObjectURL(file), // preview actual uploaded image
       }));
 
       setPlaceholders(final);
@@ -59,14 +58,13 @@ export default function Buyers() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl text-center py-10 ">
-      {/* Drag & Drop Zone */}
+    <div className="mx-auto max-w-7xl text-center py-10">
       <label
         htmlFor="file"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={` cursor-pointer transition 
+        className={`cursor-pointer transition border-2 border-dashed py-10 px-4 rounded-lg
           ${
             isDragging
               ? "bg-blue-50 border-blue-500"
@@ -93,7 +91,6 @@ export default function Buyers() {
         <input type="file" id="file" onChange={handleFileChange} hidden />
       </label>
 
-      {/* Generated Gallery */}
       {placeholders.length > 0 && (
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {placeholders.map((p) => (
